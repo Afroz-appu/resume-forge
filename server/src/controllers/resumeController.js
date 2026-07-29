@@ -30,7 +30,14 @@ export async function createResume(req, res, next) {
         next(error);
     }
 }
-
+app.get('/api/db-test', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT NOW()');
+    res.json({ success: true, time: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 export async function getResume(req, res, next) {
     try {
         const { rows } = await pool.query('SELECT * FROM resumes WHERE id = $1', [req.params.id]);
