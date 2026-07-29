@@ -20,7 +20,7 @@ export async function createResume(req, res, next) {
         }
 
         const columns = ['full_name', 'email', 'phone', 'location', 'linkedin', 'summary', 'job_title', 'company', 'start_date', 'end_date', 'achievements', 'body'];
-        const values = [fullName, email, phone, location, linkedin, summary, jobTitle, company, startDate, endDate, achievements, body];
+        const values = [fullName, email, phone, location, linkedin, summary, jobTitle, company, startDate || null, endDate || null, achievements, body];
         const placeholders = values.map((_, i) => `$${i + 1}`).join(', ');
 
         const query = `INSERT INTO resumes (${columns.join(', ')}) VALUES (${placeholders}) RETURNING id, full_name, email, created_at`;
