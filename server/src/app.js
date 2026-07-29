@@ -28,10 +28,10 @@ app.use(express.static(distPath));
 app.get('*', (req, res) => {
   res.sendFile(path.join(distPath, 'index.html'));
 });
-app.get('/api/db-check', async (req, res) => {
+app.get('/api/db-test', async (req, res) => {
   try {
-    const result = await pool.query('SELECT current_database()');
-    res.json({ database: result.rows[0].current_database });
+    const result = await pool.query('SELECT NOW()');
+    res.json({ success: true, time: result.rows[0] });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
