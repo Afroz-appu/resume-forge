@@ -1,34 +1,10 @@
-import express from 'express';
-import cors from 'cors';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import resumeRoutes from './routes/resumeRoutes.js';
-import { errorHandler } from './middleware/errorHandler.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const app = express();
-
-// FIX: CORS syntax error (was missing closing quote)
-app.use(cors({ 
-  origin: process.env.CLIENT_URL?.split(',') || '*', 
-  methods: ['GET', 'POST'] 
-}));
-
+// 1. Middleware
+app.use(cors({ origin: '*', methods: ['GET', 'POST'] }));
 app.use(express.json({ limit: '100kb' }));
+
+// 2. API routes (MUST come before static files)
 app.get('/api/health', (req, res) => res.json({ success: true, message: 'ResumeForge API is healthy.' }));
-app.use('/api/resumes', resumeRoutes);
-
-// ===== NEW: Serve React build =====
-const distPath = path.join(__dirname, '../../client/dist');
-app.use(express.static(distPath));
-
-// Catch-all: serve index.html for any route not matching API
-app.get('*', (req, res) => {
-  res.sendFile(path.join(distPath, 'index.html'));
-});
-app.get('/api/debug-db', async (req, res) => {
+app.get('/api/debug-db', async (req, res) => {   // <-- MOVE THIS UP HERE
   try {
     const db = await pool.query('SELECT current_database()');
     const tables = await pool.query(
@@ -42,8 +18,16 @@ app.get('/api/debug-db', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+app.use('/api/resumes', resumeRoutes);
 
-// ===================================
+// 3. Static file serving (React build) - MUST come AFTER API routes
+const distPath = path.join(__dirname, '../../client/dist');
+app.use(express.static(distPath));
 
+// 4. Catch-all (must be LAST)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(distPath, 'index.html'));
+});
+
+// 5. Error handler (LAST)
 app.use(errorHandler);
-export default app;
