@@ -28,6 +28,14 @@ app.use(express.static(distPath));
 app.get('*', (req, res) => {
   res.sendFile(path.join(distPath, 'index.html'));
 });
+app.get('/api/db-check', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT current_database()');
+    res.json({ database: result.rows[0].current_database });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 // ===================================
 
 app.use(errorHandler);
