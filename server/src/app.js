@@ -28,14 +28,21 @@ app.use(express.static(distPath));
 app.get('*', (req, res) => {
   res.sendFile(path.join(distPath, 'index.html'));
 });
-app.get('/api/db-test', async (req, res) => {
+app.get('/api/debug-db', async (req, res) => {
   try {
-    const result = await pool.query('SELECT NOW()');
-    res.json({ success: true, time: result.rows[0] });
+    const db = await pool.query('SELECT current_database()');
+    const tables = await pool.query(
+      "SELECT table_name FROM information_schema.tables WHERE table_schema='public'"
+    );
+    res.json({
+      database: db.rows[0].current_database,
+      tables: tables.rows.map(r => r.table_name)
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 // ===================================
 
 app.use(errorHandler);
