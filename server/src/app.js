@@ -31,3 +31,4 @@ app.get('*', (req, res) => {
 
 // 5. Error handler (LAST)
 app.use(errorHandler);
+ export default app;
