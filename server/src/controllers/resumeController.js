@@ -29,7 +29,43 @@ export async function createResume(req, res, next) {
             return res.status(400).json({ message: 'Full name and email are required.' });
         }
         const formattedStartDate = formatDate(startDate);
-const formattedEndDate = formatDate(endDate);
+        const formattedEndDate = formatDate(endDate);
+        const today = new Date();
+today.setHours(0, 0, 0, 0);
+
+// Validate start date
+if (formattedStartDate) {
+    const start = new Date(formattedStartDate);
+
+    if (start > today) {
+        return res.status(400).json({
+            message: 'Start date cannot be in the future.'
+        });
+    }
+}
+
+// Validate end date
+if (formattedEndDate) {
+    const end = new Date(formattedEndDate);
+
+    if (end > today) {
+        return res.status(400).json({
+            message: 'End date cannot be in the future.'
+        });
+    }
+}
+
+// Validate that end date is not before start date
+if (formattedStartDate && formattedEndDate) {
+    const start = new Date(formattedStartDate);
+    const end = new Date(formattedEndDate);
+
+    if (end < start) {
+        return res.status(400).json({
+            message: 'End date cannot be earlier than start date.'
+        });
+    }
+}
 
 // Check if end date is in the future
 if (formattedEndDate) {
