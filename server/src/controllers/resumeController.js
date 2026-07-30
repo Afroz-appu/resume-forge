@@ -28,6 +28,22 @@ export async function createResume(req, res, next) {
         if (!fullName?.trim() || !email?.trim()) {
             return res.status(400).json({ message: 'Full name and email are required.' });
         }
+        const formattedStartDate = formatDate(startDate);
+const formattedEndDate = formatDate(endDate);
+
+// Check if end date is in the future
+if (formattedEndDate) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const end = new Date(formattedEndDate);
+
+    if (end > today) {
+        return res.status(400).json({
+            message: 'End date cannot be in the future.'
+        });
+    }
+}
 
         const columns = ['full_name', 'email', 'phone', 'location', 'linkedin', 'summary', 'job_title', 'company', 'start_date', 'end_date', 'achievements', 'body'];
         const values = [
@@ -39,8 +55,8 @@ export async function createResume(req, res, next) {
             summary,
             jobTitle,
             company,
-            formatDate(startDate),
-            formatDate(endDate),
+            formattedStartDate,
+            formattedEndDate,
             achievements,
              body
     ];
