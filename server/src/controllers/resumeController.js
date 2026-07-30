@@ -2,6 +2,16 @@ import { pool } from '../db/pool.js';
 
 const fields = ['fullName', 'email', 'phone', 'location', 'linkedin', 'summary', 'jobTitle', 'company', 'startDate', 'endDate', 'achievements', 'body'];
 const valuesFor = (body) => fields.map((field) => body[field] || null);
+const formatDate = (date) => {
+    if (!date || date === "Present") return null;
+
+    // Already in YYYY-MM-DD format
+    if (date.includes("-")) return date;
+
+    // Convert DD/MM/YYYY to YYYY-MM-DD
+    const [day, month, year] = date.split("/");
+    return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+};
 
 export function saveDraft(req, res) {
     res.status(200).json({ 
@@ -20,10 +30,23 @@ export async function createResume(req, res, next) {
         }
 
         const columns = ['full_name', 'email', 'phone', 'location', 'linkedin', 'summary', 'job_title', 'company', 'start_date', 'end_date', 'achievements', 'body'];
-        const values = [fullName, email, phone, location, linkedin, summary, jobTitle, company, startDate || null, (endDate === "Present" || !endDate) ? null : endDate, achievements, body];
+        const values = [
+            fullName,
+            email,
+            phone,
+            location,
+            linkedin,
+            summary,
+            jobTitle,
+            company,
+            formatDate(startDate),
+            formatDate(endDate),
+            achievements,
+             body
+    ];
         const placeholders = values.map((_, i) => `$${i + 1}`).join(', ');
 
-        const query = `INSERT INTO resumes (${columns.join(', ')}) VALUES (${placeholders}) RETURNING id, full_name, email, created_at`;
+       const query = `INSERT INTO resumes (${columns.join(', ')}) VALUES (${placeholders}) RETURNING id, full_name, email`;
         const { rows } = await pool.query(query, values);
         res.status(201).json({ success: true, resume: rows[0], message: 'CV created.' });
     } catch (error) {
